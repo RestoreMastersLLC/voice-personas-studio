@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -14,8 +14,8 @@
 /coverage
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
 /build
@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
@@ -39,3 +43,66 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+
+# Audio files (generated content)
+*.mp3
+*.wav
+*.flac
+*.ogg
+*.m4a
+
+# Learning data files (contain potentially sensitive data)
+voice_learning_data.json
+enhanced_learning_data.json
+quality-dashboard-cache.json
+
+# Test files and scripts
+test*.js
+test*.ps1
+test-*.js
+verify*.js
+check*.js
+*_test.js
+debug*.js
+generate*.js
+activate*.js
+activate*.py
+ai-test.html
+complete_voice_workflow_test.js
+simple_video_analyzer.js
+full_ai_analysis.js
+systematic_voice_test.js
+video_by_video_analysis.js
+voice_comparison_test.js
+
+# Documentation files (temporary/development)
+AI_SETUP_INSTRUCTIONS.md
+PROJECT_CHECKLIST.md
+VOICE_STUDIO_STATUS.md
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# Misc
+*.tgz
+*.tar.gz
