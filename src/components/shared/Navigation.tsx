@@ -14,7 +14,8 @@ import {
   Home,
   Sliders,
   BarChart3,
-  Brain
+  Brain,
+  Wand2
 } from 'lucide-react';
 
 const navigationItems = [
@@ -36,6 +37,13 @@ const navigationItems = [
     icon: Sliders,
     description: 'Professional voice cloning & testing studio',
     badge: 'New'
+  },
+  {
+    name: 'Voice Design',
+    href: '/voice-design',
+    icon: Wand2,
+    description: 'Generate custom voices from text descriptions',
+    badge: 'AI'
   },
   {
     name: 'Quality Dashboard',
@@ -100,7 +108,7 @@ export function Navigation() {
           setLearningStatus(prev => ({ ...prev, isActive: false }));
         }
       }
-    } catch (error) {
+    } catch {
       // Silently fail - learning status is optional
       setLearningStatus(prev => ({ ...prev, isActive: false }));
     }
@@ -162,9 +170,9 @@ export function Navigation() {
 
         <div className="flex-shrink-0 px-3 py-3 border-t border-gray-800">
           <div className="space-y-2">
-            <div className="flex items-center text-xs text-gray-500">
-              <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-              All systems operational
+          <div className="flex items-center text-xs text-gray-500">
+            <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+            All systems operational
             </div>
             {learningStatus.isActive && (
               <div className="flex items-center text-xs text-indigo-400">

@@ -168,7 +168,7 @@ class ElevenLabsService {
       }
 
       console.log(`[ElevenLabs] Voice cloning SUCCESS - Voice ID: ${cloneResult.voiceId}`);
-
+      
       // Verify the voice actually exists in ElevenLabs
       const voiceExists = await this.verifyVoiceExists(cloneResult.voiceId);
       if (!voiceExists) {
@@ -310,7 +310,7 @@ class ElevenLabsService {
       for (let i = 0; i < audioFiles.length; i++) {
         const file = audioFiles[i];
         console.log(`[ElevenLabs] Fetching audio from: ${file.url}`);
-        
+
         const audioResponse = await fetch(file.url);
         if (!audioResponse.ok) {
           const error = `Failed to fetch audio: ${audioResponse.status}`;
@@ -320,11 +320,11 @@ class ElevenLabsService {
 
         const audioBlob = await audioResponse.blob();
         const audioFile = new File([audioBlob], `sample_${i + 1}.wav`, { 
-          type: 'audio/wav',
-          lastModified: Date.now()
-        });
-        
-        formData.append('files', audioFile);
+            type: 'audio/wav',
+            lastModified: Date.now()
+          });
+          
+          formData.append('files', audioFile);
         console.log(`[ElevenLabs] Added real audio file ${i + 1}: ${audioBlob.size} bytes`);
       }
 
@@ -386,7 +386,7 @@ class ElevenLabsService {
           'Verify audio file accessibility and format'
         ]
       };
-    }
+  }
   }
 
   // Test cloned voice quality with optimized settings
@@ -404,7 +404,7 @@ class ElevenLabsService {
         },
         body: JSON.stringify({
           text: testText,
-          model_id: 'eleven_multilingual_v2',
+          model_id: 'eleven_turbo_v2_5',
           voice_settings: {
             stability: 0.85,           // Balanced stability for natural variation
             similarity_boost: 0.95,    // Maximum similarity to source voice
@@ -540,13 +540,13 @@ class ElevenLabsService {
         },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_multilingual_v2',
+          model_id: 'eleven_turbo_v2_5',
           voice_settings: settings || {
             stability: 0.95,
             similarity_boost: 0.90,
             style: 0.65,
             use_speaker_boost: true
-          }
+        }
         }),
       });
 

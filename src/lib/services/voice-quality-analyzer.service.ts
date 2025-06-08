@@ -154,7 +154,7 @@ export class VoiceQualityAnalyzer {
     }
   }
 
-    /**
+  /**
    * Analyze transcription accuracy using intelligent heuristics (production-ready fallback)
    */
   private async analyzeTranscriptionAccuracy(
@@ -202,14 +202,46 @@ export class VoiceQualityAnalyzer {
       }
       
       // Normalize to reasonable range
-      const finalAccuracy = Math.max(0.65, Math.min(0.95, baseAccuracy));
+      let finalAccuracy = Math.max(0.65, Math.min(0.95, baseAccuracy));
       
+      // SPEECH PACE ANALYSIS - Critical for detecting slow/fast speech
+      const estimatedDuration = sizePerSecond > 25000 ? fileSize / 32000 : fileSize / 20000; // Better duration estimate
+      const expectedSpeechRate = textComplexity / estimatedDuration; // Characters per second
+      const normalSpeechRate = 12; // Normal speech: ~12 characters per second
+      
+      let paceScore = 1.0;
+      let paceWarnings: string[] = [];
+      
+      if (expectedSpeechRate < 8) {
+        paceScore = 0.3; // Very slow speech detected
+        paceWarnings.push('🐌 SLOW SPEECH DETECTED: Voice sounds robotic and unnatural');
+        paceWarnings.push('🔧 Recommend: Reduce stability to 0.75-0.80, lower style to 0.3-0.4');
+        finalAccuracy *= 0.7; // Penalize slow speech in accuracy
+      } else if (expectedSpeechRate < 10) {
+        paceScore = 0.6; // Moderately slow
+        paceWarnings.push('⚠️ Slightly slow speech pace detected');
+        paceWarnings.push('🔧 Recommend: Reduce stability to 0.80, adjust style to 0.4');
+        finalAccuracy *= 0.85;
+      } else if (expectedSpeechRate > 16) {
+        paceScore = 0.7; // Too fast
+        paceWarnings.push('🚀 FAST SPEECH DETECTED: Voice may sound rushed');
+        paceWarnings.push('🔧 Recommend: Increase stability to 0.85, increase style for emotion');
+        finalAccuracy *= 0.9;
+      } else if (expectedSpeechRate > 14) {
+        paceScore = 0.85; // Slightly fast but acceptable
+        paceWarnings.push('💨 Slightly fast speech pace - consider slowing down');
+        finalAccuracy *= 0.95;
+      }
+
       console.log('[VoiceQualityAnalyzer] Production heuristic analysis complete:', {
         fileSize,
         sizePerSecond: Math.round(sizePerSecond),
         format: isWav ? 'WAV' : isMp3 ? 'MP3' : 'Unknown',
         textLength: textComplexity,
-        accuracy: finalAccuracy
+        accuracy: finalAccuracy,
+        speechRate: expectedSpeechRate.toFixed(1),
+        paceScore: paceScore.toFixed(2),
+        paceWarnings: paceWarnings.length
       });
 
       return {
@@ -220,12 +252,15 @@ export class VoiceQualityAnalyzer {
           format: isWav ? 'WAV' : isMp3 ? 'MP3' : 'Unknown',
           textComplexity,
           sizePerSecond: Math.round(sizePerSecond),
-          confidence: 0.87,
-          note: 'Using optimized heuristic analysis for production reliability'
+          speechRate: expectedSpeechRate,
+          paceScore,
+          paceWarnings,
+          confidence: paceScore > 0.8 ? 0.87 : 0.65, // Lower confidence for pace issues
+          note: 'Using optimized heuristic analysis with speech pace detection'
         }
       };
 
-    } catch (error) {
+         } catch (error) {
       console.warn('[VoiceQualityAnalyzer] Analysis failed, using emergency fallback:', error instanceof Error ? error.message : 'Unknown error');
       
       // Emergency fallback - still provide reasonable estimates
@@ -237,7 +272,7 @@ export class VoiceQualityAnalyzer {
           confidence: 0.7
         } 
       };
-    }
+     }
   }
 
   /**
@@ -364,7 +399,7 @@ export class VoiceQualityAnalyzer {
       } else if (transcriptionScore < 0.7) {
         naturalness -= 0.06;
       }
-      
+
       // Text complexity affects emotional consistency
       let emotionalConsistency = 0.76; // Base emotional consistency
       const textComplexity = originalText.length;
@@ -394,7 +429,7 @@ export class VoiceQualityAnalyzer {
       
       // Calculate speech pattern quality (based on other metrics)
       const speechPattern = (naturalness + emotionalConsistency + transcriptionScore) / 3;
-      
+        
       console.log('[VoiceQualityAnalyzer] Perceptual analysis complete:', {
         naturalness: Math.round(naturalness * 100),
         emotionalConsistency: Math.round(emotionalConsistency * 100),
@@ -511,6 +546,9 @@ export class VoiceQualityAnalyzer {
                              clarityScore >= 0.65 &&
                              naturalnessScore >= 0.65;
 
+    // Extract pace warnings from transcription analysis
+    const paceWarnings = transcription?.details?.paceWarnings || [];
+
     // Generate intelligent recommendations with specific actions
     const recommendations = this.generateIntelligentRecommendations(
       transcriptionScore,
@@ -520,6 +558,11 @@ export class VoiceQualityAnalyzer {
       similarityScore,
       overall
     );
+    
+    // Add pace-specific warnings at the top if detected
+    if (paceWarnings.length > 0) {
+      recommendations.unshift(...paceWarnings);
+    }
 
     return {
       overall: Math.round(overall * 100) / 100,
@@ -532,7 +575,7 @@ export class VoiceQualityAnalyzer {
       details: {
         snr: technical.snr,
         spectralQuality: technical.spectral,
-        speechRate: 0.8, // placeholder
+        speechRate: transcription?.details?.speechRate || 0.8, // Actual speech rate from analysis
         pausePattern: 0.85, // placeholder
         frequencyResponse: 0.9, // placeholder
         distortionLevel: technical.distortion,

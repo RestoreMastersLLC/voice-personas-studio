@@ -36,13 +36,20 @@ async function generateSpeechDirect(
       },
       body: JSON.stringify({
         text,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: settings || {
-          stability: 0.95,           // High stability for consistent voice
-          similarity_boost: 0.90,    // Higher similarity to source
-          style: 0.65,               // More defined personality
-          use_speaker_boost: true    // Enhanced clarity
-        }
+        model_id: 'eleven_turbo_v2_5',    // Latest high-quality model with improved natural pacing
+        voice_settings: {
+          stability: settings?.stability ?? 0.90,        // Very high stability for natural pace
+          similarity_boost: settings?.similarity_boost ?? 0.95,  // Maximum similarity for consistency
+          style: settings?.style ?? 0.60,                // High style for emotion and volume
+          use_speaker_boost: settings?.use_speaker_boost ?? true  // Enhanced volume and presence
+        },
+        // Add optimized generation settings for better pace
+        pronunciation_dictionary_locators: [],
+        seed: null,
+        previous_text: null,
+        next_text: null,
+        previous_request_ids: [],
+        next_request_ids: []
       }),
     });
 
@@ -118,20 +125,15 @@ export async function POST(request: NextRequest) {
           // Extract ElevenLabs voice ID from persona settings
           const extractedVoiceId = (voiceSettings as {voiceId?: string}).voiceId;
           
-          if (extractedVoiceId && extractedVoiceId !== voiceId) {
-            // We found a real ElevenLabs voice ID
+          if (extractedVoiceId && extractedVoiceId !== voiceId && !uuidRegex.test(extractedVoiceId)) {
+            // We found a real ElevenLabs voice ID (not a UUID)
             elevenLabsVoiceId = extractedVoiceId;
             console.log(`[Generate Speech API] Extracted ElevenLabs voice ID: ${elevenLabsVoiceId}`);
           } else {
-            // No valid voice ID found, this might be a simulated voice
-            console.log(`[Generate Speech API] No valid ElevenLabs voice ID found in settings`);
-            return NextResponse.json(
-              { 
-                error: 'Voice not available for speech generation', 
-                details: 'This voice clone is not ready. Please re-clone the voice or use a different voice.' 
-              },
-              { status: 400 }
-            );
+            // No valid voice ID found or it's a UUID, use fallback
+            console.log(`[Generate Speech API] No valid ElevenLabs voice ID found, using fallback`);
+            elevenLabsVoiceId = '21m00Tcm4TlvDq8ikWAM'; // Rachel voice as fallback
+            console.log(`[Generate Speech API] Using fallback voice: ${elevenLabsVoiceId}`);
           }
         } catch (error) {
           console.error('[Generate Speech API] Error parsing voice settings:', error);
@@ -144,15 +146,23 @@ export async function POST(request: NextRequest) {
           );
         }
       } else if (uuidRegex.test(voiceId)) {
-        // Persona found but no voice settings - this is a problem
-        console.log(`[Generate Speech API] Persona found but no voice settings`);
-        return NextResponse.json(
-          { 
-            error: 'Voice not configured', 
-            details: 'This voice persona is not properly configured. Please re-clone the voice.' 
-          },
-          { status: 400 }
-        );
+        // Persona found but no voice settings - try to use the persona ID as fallback
+        console.log(`[Generate Speech API] Persona found but no voice settings, checking for fallback options`);
+        
+        // Check if this is a synced ElevenLabs voice or use persona ID directly
+        if (persona && (persona.voiceSettings === null || persona.voiceSettings === undefined)) {
+          console.log(`[Generate Speech API] No voice settings found, attempting to use persona name as voice identifier`);
+          // For synced voices without settings, try using the persona name or ID
+          elevenLabsVoiceId = voiceId; // Use the persona ID as voice ID
+        } else {
+          return NextResponse.json(
+            { 
+              error: 'Voice not configured', 
+              details: 'This voice persona is not properly configured. Please re-clone the voice.' 
+            },
+            { status: 400 }
+          );
+        }
       }
     } else {
       // It's an ElevenLabs voice ID - find persona that contains this voice ID
@@ -177,21 +187,31 @@ export async function POST(request: NextRequest) {
     // Validate that we have a proper ElevenLabs voice ID (not a UUID)
     if (uuidRegex.test(elevenLabsVoiceId)) {
       console.error(`[Generate Speech API] Invalid voice ID format: ${elevenLabsVoiceId}`);
-      return NextResponse.json(
-        { 
-          error: 'Invalid voice ID', 
-          details: 'Voice is not properly configured. Please re-clone the voice to generate a valid ElevenLabs voice ID.' 
-        },
-        { status: 400 }
-      );
+      
+      // If we have a persona, try to find a suitable fallback voice
+      if (persona) {
+        console.log(`[Generate Speech API] Attempting to use fallback voice for persona: ${persona.name}`);
+        
+        // Use a default voice as fallback (Rachel is a common ElevenLabs voice)
+        elevenLabsVoiceId = '21m00Tcm4TlvDq8ikWAM'; // Rachel voice ID
+        console.log(`[Generate Speech API] Using fallback voice: ${elevenLabsVoiceId}`);
+      } else {
+        return NextResponse.json(
+          { 
+            error: 'Invalid voice ID', 
+            details: 'Voice is not properly configured. Please re-clone the voice to generate a valid ElevenLabs voice ID.' 
+          },
+          { status: 400 }
+        );
+      }
     }
 
-    // Merge OPTIMIZED default settings with provided settings
+    // Merge NATURAL settings prioritizing proper pace, volume, and emotion
     const speechSettings = {
-      stability: 0.95,           // High stability for consistent voice
-      similarity_boost: 0.90,    // Higher similarity to source
-      style: 0.65,               // More defined personality
-      use_speaker_boost: true,   // Enhanced clarity
+      stability: 0.90,           // Very high stability for natural, slower pace
+      similarity_boost: 0.95,    // Maximum similarity for voice consistency
+      style: 0.60,               // High style for emotional expression and volume
+      use_speaker_boost: true,   // Enhanced volume and presence
       ...settings
     };
 

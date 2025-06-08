@@ -300,9 +300,9 @@ export default function Dashboard() {
       name: 'Production Voices',
       value: systemMetrics?.totalVoices?.toString() || '0',
       change: `${systemMetrics?.productionReady || 0} ready`,
-      icon: Mic,
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-900/20',
+    icon: Mic,
+    color: 'text-purple-400',
+    bgColor: 'bg-purple-900/20',
       trend: 'up'
     },
     {
@@ -310,8 +310,8 @@ export default function Dashboard() {
       value: `${(systemMetrics?.averageQuality ? systemMetrics.averageQuality * 100 : 0).toFixed(1)}%`,
       change: `${learningData?.qualityTrend ? (learningData.qualityTrend > 0 ? '+' : '') + learningData.qualityTrend.toFixed(1) : '0.0'}% trend`,
       icon: BarChart3,
-      color: 'text-green-400',
-      bgColor: 'bg-green-900/20',
+    color: 'text-green-400',
+    bgColor: 'bg-green-900/20',
       trend: 'up'
     },
     {
@@ -319,8 +319,8 @@ export default function Dashboard() {
       value: learningData?.currentIteration?.toString() || '0',
       change: 'AI evolving',
       icon: Brain,
-      color: 'text-orange-400',
-      bgColor: 'bg-orange-900/20',
+    color: 'text-orange-400',
+    bgColor: 'bg-orange-900/20',
       trend: 'up'
     },
     {
@@ -402,10 +402,10 @@ export default function Dashboard() {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  Voice Personas Studio
-                </h1>
-                <p className="text-gray-400 text-lg">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Voice Personas Studio
+            </h1>
+                         <p className="text-gray-400 text-lg">
                   Production-ready AI voice management platform with advanced learning & quality monitoring
                 </p>
               </div>
@@ -483,7 +483,7 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-            </div>
+                        </div>
 
             {/* System Health */}
             <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
@@ -502,7 +502,7 @@ export default function Dashboard() {
                         'bg-gray-400'
                       }`}></div>
                       <span className="text-gray-300 text-sm">{system.name}</span>
-                    </div>
+                      </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-gray-500">{system.uptime}</span>
                       <span className={`text-xs capitalize ${
@@ -544,7 +544,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Recent Activity */}
+            {/* Recent Activity */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
@@ -605,11 +605,11 @@ export default function Dashboard() {
                   <div className="text-center">
                     <p className="text-2xl font-bold text-green-400">99.9%</p>
                     <p className="text-xs text-gray-400">Uptime</p>
-                  </div>
+              </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-blue-400">127ms</p>
                     <p className="text-xs text-gray-400">Avg Response</p>
-                  </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -673,7 +673,7 @@ export default function Dashboard() {
                   <li>• Self-Optimization</li>
                 </ul>
               </div>
-            </div>
+                </div>
 
             <div className="mt-6 flex items-center justify-center">
               <div className="flex items-center bg-green-900/30 text-green-300 px-4 py-2 rounded-full">

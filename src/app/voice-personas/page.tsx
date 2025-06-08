@@ -17,11 +17,13 @@ import {
   Save,
   X,
   RefreshCw,
-  Database
+  Database,
+  Wand2
 } from 'lucide-react';
 import { ttsService } from '@/lib/services/tts.service';
 import { VoicePersona, GeneratedAudio } from '@/lib/types';
 import { fileProcessors, downloadAudioFile, generateWaveform } from '@/lib/utils/audio';
+import VoiceDesignModal from '@/components/voice-studio/VoiceDesignModal';
 
 // Fallback voice persona data (in case API fails)
 const fallbackVoicePersonas: VoicePersona[] = [
@@ -145,6 +147,7 @@ export default function VoicePersonasPage() {
   const [playbackTime, setPlaybackTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [waveformData, setWaveformData] = useState<number[]>([]);
+  const [showVoiceDesignModal, setShowVoiceDesignModal] = useState(false);
 
   // Fetch voice personas from database
   const fetchVoicePersonas = async () => {
@@ -332,6 +335,15 @@ export default function VoicePersonasPage() {
                     <span className="text-sm text-green-400">{voicePersonas.length} personas loaded</span>
                   </div>
                 )}
+                
+                <button
+                  onClick={() => setShowVoiceDesignModal(true)}
+                  className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+                  title="Create custom voice from text description"
+                >
+                  <Wand2 className="w-4 h-4 text-white" />
+                  <span className="text-sm text-white">Design Voice</span>
+                </button>
                 
                 <button
                   onClick={fetchVoicePersonas}
@@ -567,6 +579,18 @@ export default function VoicePersonasPage() {
 
       {/* Hidden audio element for playback */}
       <audio ref={audioRef} />
+
+      {/* Voice Design Modal */}
+      <VoiceDesignModal
+        isOpen={showVoiceDesignModal}
+        onClose={() => setShowVoiceDesignModal(false)}
+        onVoiceCreated={(voiceId, name) => {
+          console.log('New voice created:', name, voiceId);
+          // Refresh personas to show the new voice
+          fetchVoicePersonas();
+          setShowVoiceDesignModal(false);
+        }}
+      />
     </div>
   );
 } 
